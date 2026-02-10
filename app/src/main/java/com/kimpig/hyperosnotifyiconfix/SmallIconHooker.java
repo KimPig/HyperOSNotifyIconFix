@@ -23,6 +23,7 @@ import java.util.List;
 public final class SmallIconHooker {
 
     private static final String FAKE_ICON_TAG = "aosp_icon_clone_tag";
+    private static boolean lastShouldSubstitute = true;
 
     static void hook(XC_LoadPackage.LoadPackageParam lpparam) {
         hookStatusBarIcons(lpparam);
@@ -59,10 +60,13 @@ public final class SmallIconHooker {
 
                                 if (imageView == null || expandedNotification == null) return;
 
-                                // ExpandedNotification 자체가 StatusBarNotification을 상속하므로 직접 캐스팅
                                 StatusBarNotification sbn = (StatusBarNotification) expandedNotification;
 
                                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
+
+                                // grayscale smallIcon을 가진 알림은 시스템 기본 렌더링 사용
+                                boolean isGrayscaleIcon = sbn.getNotification().extras.getBoolean("miui.isGrayscaleIcon", false);
+                                if (isGrayscaleIcon) return;
 
                                 applyAospStyleToView(imageView, sbn, true);
                             } catch (Throwable ignored) {}
@@ -93,11 +97,15 @@ public final class SmallIconHooker {
                                 if (sbn != null && sbn.getNotification() != null) {
                                     boolean isGrayscaleIcon = sbn.getNotification().extras.getBoolean("miui.isGrayscaleIcon", false);
                                     if (isGrayscaleIcon) {
-                                        // 이미 grayscale smallIcon을 가진 알림은 대체하지 않음
                                         param.setResult(false);
+                                        lastShouldSubstitute = false;
+                                        return;
                                     }
                                 }
-                            } catch (Throwable ignored2) {}
+                                lastShouldSubstitute = true;
+                            } catch (Throwable ignored2) {
+                                lastShouldSubstitute = true;
+                            }
                         }
                     }
             );
