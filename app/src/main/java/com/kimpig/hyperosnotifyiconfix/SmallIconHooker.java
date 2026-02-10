@@ -56,15 +56,13 @@ public final class SmallIconHooker {
                                 Context context = (Context) param.args[0];
                                 Object expandedNotification = param.args[1];
                                 ImageView imageView = (ImageView) param.args[2];
-                                boolean isXSpace = (boolean) param.args[3];
 
                                 if (imageView == null || expandedNotification == null) return;
 
-                                StatusBarNotification sbn = (StatusBarNotification) XposedHelpers.callMethod(
-                                        expandedNotification, "getSbn"
-                                );
+                                // ExpandedNotification 자체가 StatusBarNotification을 상속하므로 직접 캐스팅
+                                StatusBarNotification sbn = (StatusBarNotification) expandedNotification;
 
-                                if (sbn == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
+                                if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
 
                                 applyAospStyleToView(imageView, sbn, true);
                             } catch (Throwable ignored) {}
