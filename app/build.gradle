@@ -1,0 +1,43 @@
+def generateVersionName() {
+    return new java.text.SimpleDateFormat("yy.MM.dd", java.util.Locale.getDefault()).format(new Date())
+}
+
+def generateVersionCode() {
+    return Integer.parseInt(new java.text.SimpleDateFormat("yyMMdd", java.util.Locale.getDefault()).format(new Date()))
+}
+
+plugins {
+    id 'com.android.application' version '8.5.0'
+}
+
+android {
+    namespace 'com.kimpig.hyperosnotifyiconfix'
+    compileSdk 34
+
+    defaultConfig {
+        applicationId "com.kimpig.hyperosnotifyiconfix"
+        minSdk 26
+        targetSdk 34
+        versionCode generateVersionCode()
+        versionName generateVersionName()
+    }
+
+    buildTypes {
+        release {
+            minifyEnabled false
+            proguardFiles getDefaultProguardFile('proguard-android.txt'), 'proguard-rules.pro'
+        }
+        debug {
+            minifyEnabled false
+        }
+    }
+
+    compileOptions {
+        sourceCompatibility JavaVersion.VERSION_1_8
+        targetCompatibility JavaVersion.VERSION_1_8
+    }
+}
+
+dependencies {
+    compileOnly 'de.robv.android.xposed:api:82'
+}

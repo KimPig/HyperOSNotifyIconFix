@@ -1,0 +1,4 @@
+<resources>
+    <string name="app_name">HyperOS Notify Icon Fix</string>
+    <string name="app_desc">Force SystemUI to use app-provided Notification.smallIcon on HyperOS/MIUI</string>
+</resources>
