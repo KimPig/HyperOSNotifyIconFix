@@ -64,9 +64,9 @@ public final class SmallIconHooker {
 
                                 if (Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
 
-                                // grayscale smallIcon을 가진 알림은 시스템 기본 렌더링 사용
-                                boolean isGrayscaleIcon = sbn.getNotification().extras.getBoolean("miui.isGrayscaleIcon", false);
-                                if (isGrayscaleIcon) return;
+                                // 대화형 알림(MessagingStyle)이면 스킵
+                                String template = sbn.getNotification().extras.getString("android.template");
+                                if (template != null && template.contains("Messaging")) return;
 
                                 applyAospStyleToView(imageView, sbn, true);
                             } catch (Throwable ignored) {}
