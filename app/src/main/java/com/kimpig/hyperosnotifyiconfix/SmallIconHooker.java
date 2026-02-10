@@ -180,6 +180,7 @@ public final class SmallIconHooker {
     private static void applyAospStyleToView(ImageView iconView, StatusBarNotification sbn, boolean isMiuiPanel) {
         if (iconView == null || sbn == null || Build.VERSION.SDK_INT < Build.VERSION_CODES.M) return;
         try {
+            if (isConversationBadge(iconView)) return;
             Context context = iconView.getContext();
             Icon smallIcon = sbn.getNotification().getSmallIcon();
 
@@ -262,4 +263,30 @@ public final class SmallIconHooker {
     private static ImageView findChildHeaderIcon(Object childRow) { try { Object wrapper = XposedHelpers.getObjectField(childRow, "mPrivateLayout"); if (wrapper != null) { View contracted = (View) XposedHelpers.callMethod(wrapper, "getContractedChild"); ImageView v = tryFindAppIconInView(contracted); if (v != null) return v; View expanded = (View) XposedHelpers.callMethod(wrapper, "getExpandedChild"); v = tryFindAppIconInView(expanded); if (v != null) return v; } Object f = XposedHelpers.getObjectField(childRow, "mAppIcon"); if (f instanceof ImageView) return (ImageView) f; } catch (Throwable ignored) {} return null; }
     private static ImageView tryFindAppIconInView(View root) { if (root == null) return null; try { int[] candidates = new int[] { root.getResources().getIdentifier("app_icon", "id", "com.android.systemui"), root.getResources().getIdentifier("notification_header_icon", "id", "com.android.systemui"), root.getResources().getIdentifier("icon", "id", "android") }; for (int id : candidates) { if (id != 0) { View v = root.findViewById(id); if (v instanceof ImageView) return (ImageView) v; } } } catch (Throwable ignored) {} return null; }
     private static boolean isGrayscale(ImageView i, StatusBarNotification s) { if (s == null || i.getDrawable() == null) return true; try { Class<?> c = XposedHelpers.findClass("com.android.internal.util.ContrastColorUtil", null); Object inst = XposedHelpers.callStaticMethod(c, "getInstance", i.getContext()); return (boolean) XposedHelpers.callMethod(inst, "isGrayscaleIcon", i.getDrawable()); } catch (Throwable ignored) { return true; } }
+	private static boolean isConversationBadge(ImageView iconView) {
+        try {
+            View parent = iconView;
+            for (int i = 0; i < 5; i++) {
+                if (parent.getParent() instanceof View) {
+                    parent = (View) parent.getParent();
+                    if (parent.getClass().getName().contains("ConversationLayout")) {
+                        int size = Math.max(iconView.getWidth(), iconView.getHeight());
+                        if (size > 0 && size < dpToPx(iconView.getContext(), 32)) {
+                            return true;
+                        }
+                        if (size == 0) {
+                            ViewGroup.LayoutParams lp = iconView.getLayoutParams();
+                            if (lp != null && lp.width > 0 && lp.width < dpToPx(iconView.getContext(), 32)) {
+                                return true;
+                            }
+                        }
+                        return false;
+                    }
+                } else {
+                    break;
+                }
+            }
+        } catch (Throwable ignored) {}
+        return false;
+    }
 }
